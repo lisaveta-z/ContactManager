@@ -1,11 +1,16 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using ContactManager.Models.Validation;
 
 namespace ContactManager.Models
 {
     public class Contact
     {
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public int Id { get; set; }
+
         [Required(ErrorMessage = "Last name is required")]
         [RegularExpression(@"^(\S|\D)*$", ErrorMessage = "No white spaces or numbers allowed")]
         public string LastName { get; set; }
