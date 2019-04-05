@@ -26,6 +26,11 @@ namespace ContactManager.Models
             _context.Dispose();
         }
 
+        public async Task<List<Contact>> GetAllAsync()
+        {
+            return await _context.Contacts.ToListAsync();
+        }
+
         public async Task<Contact> GetByIdAsync(int id) 
         {
             return await _context.Contacts.FindAsync(id);
@@ -41,7 +46,9 @@ namespace ContactManager.Models
         public async Task<bool> UpdateAsync(Contact Contact)
         {
             if (!await ContactExists(Contact.Id))
+            {
                 return false;
+            }
 
             _context.Contacts.Update(Contact);
             await _context.SaveChangesAsync();
@@ -51,7 +58,9 @@ namespace ContactManager.Models
         public async Task<bool> DeleteAsync(int id)
         {
             if (!await ContactExists(id))
+            {
                 return false;
+            }
 
             var toRemove = await _context.Contacts.FindAsync(id);
             _context.Contacts.Remove(toRemove);

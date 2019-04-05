@@ -13,30 +13,28 @@ namespace ContactManager.Controllers
     [ApiController]
     public class ContactsController : ControllerBase
     {
-        private readonly ContactsContext _context;
+        private readonly IContactRepository _repository;
 
-        public ContactsController(ContactsContext context)
+        public ContactsController(IContactRepository repository)
         {
-            _context = context;
+            _repository = repository;
         }
 
-        // GET: api/Contacts
         [HttpGet]
-        public IEnumerable<Contact> GetContacts()
+        public async Task<IActionResult> Get()
         {
-            return _context.Contacts;
+            return new ObjectResult(await _repository.GetAllAsync());
         }
 
-        // GET: api/Contacts/5
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetContact([FromRoute] int id)
+        public async Task<IActionResult> Get([FromRoute] int id)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var contact = await _context.Contacts.FindAsync(id);
+            var contact = await _repository.GetByIdAsync(id);
 
             if (contact == null)
             {
@@ -46,9 +44,32 @@ namespace ContactManager.Controllers
             return Ok(contact);
         }
 
-        // PUT: api/Contacts/5
+        [HttpGet("tag/{tag}")]
+        public async Task<IActionResult> GetByTag([FromRoute] string tag)
+        {
+            return new ObjectResult(await _repository.GetByTagAsync(tag));
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Post([FromBody] Contact contact)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            if (contact == null)
+            {
+                return BadRequest();
+            }
+
+            await _repository.AddAsync(contact);
+
+            return CreatedAtAction("Get", new { id = contact.Id }, contact);
+        }
+
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutContact([FromRoute] int id, [FromBody] Contact contact)
+        public async Task<IActionResult> Put([FromRoute] int id, [FromBody] Contact contact)
         {
             if (!ModelState.IsValid)
             {
@@ -60,66 +81,39 @@ namespace ContactManager.Controllers
                 return BadRequest();
             }
 
-            _context.Entry(contact).State = EntityState.Modified;
-
-            try
+            if (await _repository.GetByIdAsync(id) == null)
             {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!ContactExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                return NotFound();
             }
 
-            return NoContent();
+
+            if (await _repository.UpdateAsync(contact))
+            {
+                return Ok(contact);
+            }
+            return StatusCode(500);
         }
 
-        // POST: api/Contacts
-        [HttpPost]
-        public async Task<IActionResult> PostContact([FromBody] Contact contact)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            _context.Contacts.Add(contact);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction("GetContact", new { id = contact.Id }, contact);
-        }
-
-        // DELETE: api/Contacts/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteContact([FromRoute] int id)
+        public async Task<IActionResult> Delete(int id)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var contact = await _context.Contacts.FindAsync(id);
+            var contact = await _repository.GetByIdAsync(id);
             if (contact == null)
             {
                 return NotFound();
             }
 
-            _context.Contacts.Remove(contact);
-            await _context.SaveChangesAsync();
+            if (await _repository.DeleteAsync(id))
+            {
+                return Ok(contact);
+            }
 
-            return Ok(contact);
-        }
-
-        private bool ContactExists(int id)
-        {
-            return _context.Contacts.Any(e => e.Id == id);
+            return StatusCode(500);
         }
     }
 }

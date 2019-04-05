@@ -7,6 +7,7 @@ namespace ContactManager.Models
 {
     public interface IContactRepository : IDisposable
     {
+        Task<List<Contact>> GetAllAsync();
         Task<Contact> AddAsync(Contact newContact); 
         Task<bool> DeleteAsync(int id);
         Task<bool> UpdateAsync(Contact contact);

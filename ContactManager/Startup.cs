@@ -23,6 +23,8 @@ namespace ContactManager
             string connection = Configuration.GetConnectionString("DefaultConnection");
             services.AddDbContext<ContactsContext>(options => options.UseSqlServer(connection));
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+
+            services.AddTransient<IContactRepository, ContactRepository>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
