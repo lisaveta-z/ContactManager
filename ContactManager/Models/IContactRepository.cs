@@ -1,13 +1,16 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace ContactManager.Models
 {
-    public interface IContactRepository
+    public interface IContactRepository : IDisposable
     {
-        void Create(Contact contact);
-        void Delete(int id);
-        void Update(int id, Contact contact);
-        Contact Get(int id);
-        IEnumerable<Contact> GetAllForTag(string tag);
+        Task<Contact> AddAsync(Contact newContact); 
+        Task<bool> DeleteAsync(int id);
+        Task<bool> UpdateAsync(Contact contact);
+        Task<Contact> GetByIdAsync(int id); 
+        Task<List<Contact>> GetByTagAsync(string tag);
     }
 }
