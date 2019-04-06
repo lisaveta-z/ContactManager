@@ -3,23 +3,19 @@ using ContactManager.Controllers;
 using ContactManager.Models;
 using Moq;
 using Xunit;
-using Microsoft.AspNetCore;
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
+using ContactManager.Services;
 
 namespace ContactManager.Tests
 {
     public class ContactsControllerTests
     {
         ContactsController _controller;
-        Mock<IContactRepository> _mock;
+        Mock<IContactService> _mock;
 
         public ContactsControllerTests()
         {
-            _mock = new Mock<IContactRepository>();
+            _mock = new Mock<IContactService>();
             _controller = new ContactsController(_mock.Object);
         }
 
@@ -43,7 +39,7 @@ namespace ContactManager.Tests
             // Assert
             var createdAtAction = Assert.IsType<CreatedAtActionResult>(result.Result);
             Assert.Equal("Get", createdAtAction.ActionName);
-            _mock.Verify(r => r.AddAsync(newContact));
+            _mock.Verify(r => r.Add(newContact));
         }
 
         [Fact]

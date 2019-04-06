@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using ContactManager.Models;
+using ContactManager.Services;
 
 namespace ContactManager.Controllers
 {
@@ -13,29 +9,24 @@ namespace ContactManager.Controllers
     [ApiController]
     public class ContactsController : ControllerBase
     {
-        private readonly IContactRepository _repository;
+        private readonly IContactService _service;
 
-        public ContactsController(IContactRepository repository)
+        public ContactsController(IContactService service)
         {
-            _repository = repository;
+            _service = service;
         }
 
         [HttpGet]
         public async Task<IActionResult> Get()
         {
-            var contacts = await _repository.GetAllAsync();
+            var contacts = await _service.GetAll();
             return Ok(contacts);
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> Get([FromRoute] int id)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            var contact = await _repository.GetByIdAsync(id);
+            var contact = await _service.GetById(id);
 
             if (contact == null)
             {
@@ -48,7 +39,7 @@ namespace ContactManager.Controllers
         [HttpGet("tag/{tag}")]
         public async Task<IActionResult> GetByTag([FromRoute] string tag)
         {
-            var contactsByTag = await _repository.GetByTagAsync(tag);
+            var contactsByTag = await _service.GetByTag(tag);
             return Ok(contactsByTag);
         }
 
@@ -65,7 +56,7 @@ namespace ContactManager.Controllers
                 return BadRequest();
             }
 
-            await _repository.AddAsync(contact);
+            await _service.Add(contact);
 
             return CreatedAtAction("Get", new { id = contact.Id }, contact);
         }
@@ -83,26 +74,26 @@ namespace ContactManager.Controllers
                 return BadRequest();
             }
 
-            if (await _repository.GetByIdAsync(id) == null)
+            if (await _service.GetById(id) == null)
             {
                 return NotFound();
             }
 
-            await _repository.UpdateAsync(contact);
-            return Ok(contact);
+            await _service.Update(contact);
+            return NoContent();
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var contact = await _repository.GetByIdAsync(id);
+            var contact = await _service.GetById(id);
 
             if (contact == null)
             {
                 return NotFound();
             }
 
-            await _repository.DeleteAsync(id);
+            await _service.Delete(id);
             return Ok(contact);
         }
     }
