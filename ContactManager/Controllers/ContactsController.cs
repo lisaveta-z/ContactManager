@@ -23,7 +23,8 @@ namespace ContactManager.Controllers
         [HttpGet]
         public async Task<IActionResult> Get()
         {
-            return new ObjectResult(await _repository.GetAllAsync());
+            var contacts = await _repository.GetAllAsync();
+            return Ok(contacts);
         }
 
         [HttpGet("{id}")]
@@ -47,7 +48,8 @@ namespace ContactManager.Controllers
         [HttpGet("tag/{tag}")]
         public async Task<IActionResult> GetByTag([FromRoute] string tag)
         {
-            return new ObjectResult(await _repository.GetByTagAsync(tag));
+            var contactsByTag = await _repository.GetByTagAsync(tag);
+            return Ok(contactsByTag);
         }
 
         [HttpPost]
@@ -86,34 +88,22 @@ namespace ContactManager.Controllers
                 return NotFound();
             }
 
-
-            if (await _repository.UpdateAsync(contact))
-            {
-                return Ok(contact);
-            }
-            return StatusCode(500);
+            await _repository.UpdateAsync(contact);
+            return Ok(contact);
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
             var contact = await _repository.GetByIdAsync(id);
+
             if (contact == null)
             {
                 return NotFound();
             }
 
-            if (await _repository.DeleteAsync(id))
-            {
-                return Ok(contact);
-            }
-
-            return StatusCode(500);
+            await _repository.DeleteAsync(id);
+            return Ok(contact);
         }
     }
 }
